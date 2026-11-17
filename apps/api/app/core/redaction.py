@@ -78,7 +78,10 @@ def sanitize_headers(headers: Union[Dict[str, Any], List[List[str]]]) -> Dict[st
     if isinstance(headers, dict):
         for k, v in headers.items():
             if is_sensitive_key(str(k)):
-                sanitized[str(k)] = "<REDACTED>"
+                if str(v).strip().lower().startswith("bearer "):
+                    sanitized[str(k)] = "Bearer <REDACTED>"
+                else:
+                    sanitized[str(k)] = "<REDACTED>"
             else:
                 sanitized[str(k)] = sanitize_string(str(v))
     elif isinstance(headers, list):
@@ -86,7 +89,10 @@ def sanitize_headers(headers: Union[Dict[str, Any], List[List[str]]]) -> Dict[st
             if len(item) == 2:
                 k, v = item
                 if is_sensitive_key(str(k)):
-                    sanitized[str(k)] = "<REDACTED>"
+                    if str(v).strip().lower().startswith("bearer "):
+                        sanitized[str(k)] = "Bearer <REDACTED>"
+                    else:
+                        sanitized[str(k)] = "<REDACTED>"
                 else:
                     sanitized[str(k)] = sanitize_string(str(v))
     return sanitized
