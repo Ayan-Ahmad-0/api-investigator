@@ -74,6 +74,22 @@ def get_single_endpoint(
     return ep
 
 
+@router.delete("/endpoints/{endpoint_id}")
+def delete_endpoint_route(
+    endpoint_id: str,
+    db: Session = Depends(get_db),
+):
+    ep = db.query(ApiEndpoint).filter(ApiEndpoint.id == endpoint_id).first()
+    if not ep:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Endpoint not found")
+    monitors = db.query(Monitor).filter(Monitor.endpoint_id == endpoint_id).all()
+    for m in monitors:
+        db.delete(m)
+    db.delete(ep)
+    db.commit()
+    return {"message": "Endpoint deleted successfully"}
+
+
 @router.post("/projects/{project_id}/monitors", response_model=MonitorResponse, status_code=status.HTTP_201_CREATED)
 def register_monitor(
     project_id: str,
