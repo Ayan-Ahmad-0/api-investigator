@@ -71,7 +71,7 @@ def get_endpoint_metrics(
 
     total = len(checks)
     if total == 0:
-        return {"total_checks": 0, "error_rate": 0.0, "avg_duration_ms": 0.0}
+        return {"total_checks": 0, "failing_checks": 0, "error_rate": 0.0, "avg_duration_ms": 0.0}
 
     failing = sum(1 for c in checks if c.status in ("failing", "timeout"))
     durations = [c.duration_ms for c in checks if c.duration_ms is not None]

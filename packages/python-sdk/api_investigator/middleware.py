@@ -5,6 +5,7 @@ from typing import Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette.routing import Match
 from api_investigator.redaction import sanitize_headers
 
 
@@ -20,11 +21,10 @@ class InvestigatorMiddleware(BaseHTTPMiddleware):
 
         # Determine route template
         route_template = request.url.path
-        if "endpoint" in request.scope and hasattr(request.scope["endpoint"], "__name__"):
-            # Check route in router
+        if hasattr(request.app, "routes"):
             for route in request.app.routes:
                 match, _ = route.matches(request.scope)
-                if match:
+                if match == Match.FULL:
                     route_template = getattr(route, "path", request.url.path)
                     break
 
