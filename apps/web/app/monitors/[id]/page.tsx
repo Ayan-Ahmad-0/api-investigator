@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -11,6 +11,7 @@ import {
   Radio,
   Server,
   Shield,
+  Trash2,
   XCircle,
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -21,11 +22,13 @@ import { formatDate, formatLatency, formatPercentage } from '@/lib/utils';
 
 export default function EndpointDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const endpointId = (params?.id as string) || 'ep_billing_checkout';
 
   const [endpoint, setEndpoint] = useState<Endpoint | null>(null);
   const [checks, setChecks] = useState<CheckResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -42,6 +45,20 @@ export default function EndpointDetailPage() {
     }
     load();
   }, [endpointId]);
+
+  const handleDelete = async () => {
+    if (!endpoint) return;
+    if (!confirm(`Are you sure you want to permanently delete monitor "${endpoint.name}"?`)) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await api.deleteEndpoint(endpoint.id);
+      router.push('/monitors');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (loading || !endpoint) {
     return (
@@ -61,14 +78,26 @@ export default function EndpointDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/monitors" className="hover:text-slate-900 flex items-center gap-1 font-medium">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to All Monitors</span>
-        </Link>
-        <span>/</span>
-        <span className="font-mono text-slate-700 font-semibold">{endpoint.name}</span>
+      {/* Breadcrumb & Actions */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <Link href="/monitors" className="hover:text-slate-900 flex items-center gap-1 font-medium">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to All Monitors</span>
+          </Link>
+          <span>/</span>
+          <span className="font-mono text-slate-700 font-semibold">{endpoint.name}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-transparent transition-colors disabled:opacity-50"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          <span>{isDeleting ? 'Deleting...' : 'Delete Monitor'}</span>
+        </button>
       </div>
 
       {/* Header Profile */}

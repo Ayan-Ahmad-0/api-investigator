@@ -8,6 +8,7 @@ import {
   Radio,
   Search,
   Server,
+  Trash2,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Endpoint } from '@/lib/types';
@@ -21,6 +22,7 @@ export default function MonitorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -37,6 +39,19 @@ export default function MonitorsPage() {
   const handleCreateEndpoint = async (data: Partial<Endpoint>) => {
     const created = await api.createEndpoint('proj_core_api_prod', data);
     setEndpoints((prev) => [created, ...prev]);
+  };
+
+  const handleDeleteEndpoint = async (endpointId: string, endpointName: string) => {
+    if (!confirm(`Are you sure you want to remove the monitor for "${endpointName}"?`)) {
+      return;
+    }
+    setDeletingId(endpointId);
+    try {
+      await api.deleteEndpoint(endpointId);
+      setEndpoints((prev) => prev.filter((e) => e.id !== endpointId));
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const filtered = endpoints.filter((ep) => {
@@ -125,7 +140,7 @@ export default function MonitorsPage() {
                   <th className="p-4">Last Latency</th>
                   <th className="p-4">Uptime (30d)</th>
                   <th className="p-4">Interval</th>
-                  <th className="p-4 text-right">Action</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -172,13 +187,24 @@ export default function MonitorsPage() {
                       Every {ep.interval_seconds}s
                     </td>
                     <td className="p-4 text-right whitespace-nowrap">
-                      <Link
-                        href={`/monitors/${ep.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
-                      >
-                        <span>Inspect</span>
-                        <ExternalLink className="w-3 h-3 text-slate-400" />
-                      </Link>
+                      <div className="inline-flex items-center gap-2">
+                        <Link
+                          href={`/monitors/${ep.id}`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
+                        >
+                          <span>Inspect</span>
+                          <ExternalLink className="w-3 h-3 text-slate-400" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEndpoint(ep.id, ep.name)}
+                          disabled={deletingId === ep.id}
+                          className="inline-flex items-center p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                          title="Delete Monitor"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
