@@ -16,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="font-sans antialiased">
+    <html lang="en">
+      <body className="font-sans antialiased bg-slate-50 text-slate-900">
         <Navigation>{children}</Navigation>
       </body>
     </html>
