@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class InvestigationCreate(BaseModel):
@@ -45,8 +45,7 @@ class EvidenceSchema(BaseModel):
     sanitized_excerpt: Optional[str] = None
     relationship: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class InvestigationResponse(BaseModel):
@@ -66,5 +65,4 @@ class InvestigationResponse(BaseModel):
     hypotheses: Optional[List[HypothesisSchema]] = None
     evidence_items: Optional[List[EvidenceSchema]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

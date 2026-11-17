@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(api_v1_router)
 
 # Mount local demo test service simulator (specification section 25)
+app.include_router(demo_router, prefix="/api/v1/demo")
 app.include_router(demo_router, prefix="/demo")
 app.include_router(demo_router)
 
