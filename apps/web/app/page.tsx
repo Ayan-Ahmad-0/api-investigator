@@ -10,10 +10,10 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Plus,
   Radio,
   Server,
-  TrendingDown,
-  TrendingUp,
+  ShieldAlert,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { AnalyticsOverview, Endpoint, Incident } from '@/lib/types';
@@ -48,11 +48,11 @@ export default function OverviewPage() {
 
   if (loading || !analytics) {
     return (
-      <div className="space-y-4">
-        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+      <div className="space-y-6">
+        <div className="h-8 w-64 bg-slate-200 rounded animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-28 bg-slate-200 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -62,283 +62,238 @@ export default function OverviewPage() {
   const activeIncidents = incidents.filter((i) => i.status !== 'resolved');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            System Overview & Health
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Real-time telemetry and synthetic probe monitoring across production endpoints
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          API Reliability Overview
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Live external uptime checks, error telemetry, and automated root cause investigations for production services.
+        </p>
+      </div>
+
+      {/* Prominent Active Incidents Banner */}
+      {activeIncidents.length > 0 && (
+        <div className="border border-rose-200 bg-rose-50/60 rounded-xl p-6 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+              <h2 className="text-sm font-semibold text-rose-900 uppercase tracking-wider">
+                Action Required: {activeIncidents.length} Active Incidents Detected
+              </h2>
+            </div>
+            <Link
+              href="/incidents"
+              className="text-xs font-semibold text-rose-700 hover:text-rose-900 flex items-center gap-1"
+            >
+              <span>View All Incidents</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activeIncidents.map((incident) => (
+              <div
+                key={incident.id}
+                className="bg-white border border-rose-200/80 rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition-shadow"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <SeverityBadge severity={incident.severity} />
+                    <span className="text-xs font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
+                      {formatPercentage(incident.error_rate)} Failures
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-sm text-slate-900">
+                    {incident.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-mono mt-1">
+                    Route: {incident.affected_route}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-2 line-clamp-2">
+                    {incident.impact_summary}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">
+                    Started {formatDate(incident.started_at)}
+                  </span>
+                  <Link
+                    href={`/incidents/${incident.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors shadow-2xs"
+                  >
+                    <span>Investigate Root Cause</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3 High-Level Vital Signs */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Availability */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Overall Uptime</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-bold font-mono text-slate-900">
+              98.6%
+            </span>
+            <span className="text-xs text-slate-500">last 30 days</span>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            {analytics.healthy_endpoints_count} healthy, {analytics.degraded_endpoints_count} degraded, {analytics.failing_endpoints_count} failing
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/monitors"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
-          >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Manage Monitors</span>
-          </Link>
-          <Link
-            href="/incidents"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors"
-          >
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span>View Active Incidents ({activeIncidents.length})</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* High-Level Metric Tiles (Solid surfaces, strict visual hierarchy) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Endpoint Health Breakdown */}
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Monitored Endpoints
+        {/* Median Latency */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Median Latency (P50)</span>
+            <Clock className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-bold font-mono text-slate-900">
+              {formatLatency(analytics.average_latency_ms)}
             </span>
+            <span className="text-xs text-slate-500">
+              P95: {formatLatency(analytics.p95_latency_ms)}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            Measured across 18,450 synthetic probes & telemetry spans
+          </p>
+        </div>
+
+        {/* Monitored APIs */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider">Monitored Endpoints</span>
             <Server className="w-4 h-4 text-slate-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">
+            <span className="text-3xl font-bold font-mono text-slate-900">
               {endpoints.length}
             </span>
-            <span className="text-xs text-slate-500">total checks</span>
+            <span className="text-xs text-slate-500">registered targets</span>
           </div>
-          <div className="mt-3 flex items-center gap-3 text-xs font-mono">
-            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-              {analytics.healthy_endpoints_count} Healthy
-            </span>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span className="text-amber-600 dark:text-amber-400 font-semibold">
-              {analytics.degraded_endpoints_count} Degraded
-            </span>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span className="text-rose-600 dark:text-rose-400 font-semibold">
-              {analytics.failing_endpoints_count} Failing
-            </span>
-          </div>
-        </div>
-
-        {/* Active Incidents */}
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Active Incidents
-            </span>
-            <AlertOctagon className="w-4 h-4 text-rose-500" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
-              {analytics.active_incidents_count}
-            </span>
-            <span className="text-xs text-rose-600/80 font-medium">attention required</span>
-          </div>
-          <div className="mt-3 text-xs text-slate-500">
-            1 Critical (Pool Exhaustion), 1 Medium (Latency)
-          </div>
-        </div>
-
-        {/* Global Error Rate */}
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Aggregate Error Rate
-            </span>
-            <Activity className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">
-              {formatPercentage(analytics.error_rate_percentage)}
-            </span>
-            <span className="text-xs text-rose-600 font-mono font-medium flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" /> +1.2%
-            </span>
-          </div>
-          <div className="mt-3 text-xs text-slate-500">
-            Across 18,450 synthetic and telemetry checks
-          </div>
-        </div>
-
-        {/* Latency Percentiles */}
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Tail Latency (P95)
-            </span>
-            <Clock className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">
-              {formatLatency(analytics.p95_latency_ms)}
-            </span>
-            <span className="text-xs text-slate-500">P50: {formatLatency(analytics.average_latency_ms)}</span>
-          </div>
-          <div className="mt-3 text-xs text-slate-500">
-            P99 threshold: {formatLatency(analytics.p99_latency_ms)}
-          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            Automated synthetic HTTP checks run every 60 seconds
+          </p>
         </div>
       </div>
 
-      {/* Operational Charts (Error Rate & Tail Latency Trends) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ErrorRateChart data={analytics.error_rate_trend} height={190} />
-        <LatencyChart data={analytics.latency_trend} height={190} />
-      </div>
-
-      {/* Active Incidents Table */}
-      <div className="border border-slate-200 dark:border-slate-800 rounded bg-white dark:bg-slate-900 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      {/* Latency & Error Rate Trends */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Active Production Incidents
-            </h3>
+            <h2 className="text-base font-semibold text-slate-900">
+              Telemetry & Failure Trends
+            </h2>
             <p className="text-xs text-slate-500">
-              Correlated failure clusters with automated evidence retrieval and Failure DNA matching
+              Visual correlation of error spikes against tail latency percentiles
             </p>
           </div>
           <Link
-            href="/incidents"
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+            href="/analytics"
+            className="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
           >
-            <span>View All Incidents</span>
+            <span>Full Analytics Report</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 uppercase font-mono tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="p-3">Severity</th>
-                <th className="p-3">Incident Title</th>
-                <th className="p-3">Affected Route</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Duration</th>
-                <th className="p-3">Error Rate</th>
-                <th className="p-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {incidents.slice(0, 3).map((incident) => (
-                <tr
-                  key={incident.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                >
-                  <td className="p-3 whitespace-nowrap">
-                    <SeverityBadge severity={incident.severity} />
-                  </td>
-                  <td className="p-3 font-medium text-slate-900 dark:text-slate-100 max-w-sm truncate">
-                    <Link
-                      href={`/incidents/${incident.id}`}
-                      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
-                      {incident.title}
-                    </Link>
-                  </td>
-                  <td className="p-3 font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                    {incident.affected_route}
-                  </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <StatusBadge status={incident.status} />
-                  </td>
-                  <td className="p-3 text-slate-500 whitespace-nowrap">
-                    {incident.duration_minutes ? `${incident.duration_minutes}m` : 'Ongoing'}
-                  </td>
-                  <td className="p-3 font-mono whitespace-nowrap">
-                    <span className={incident.error_rate > 5 ? 'text-rose-600 font-bold' : 'text-slate-600'}>
-                      {formatPercentage(incident.error_rate)}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right whitespace-nowrap">
-                    <Link
-                      href={`/incidents/${incident.id}`}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <span>Investigate</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ErrorRateChart data={analytics.error_rate_trend} height={180} />
+          <LatencyChart data={analytics.latency_trend} height={180} />
         </div>
       </div>
 
-      {/* Monitored Endpoints Quick Status */}
-      <div className="border border-slate-200 dark:border-slate-800 rounded bg-white dark:bg-slate-900 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      {/* Endpoints Quick Health Table */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs space-y-0">
+        <div className="p-5 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Registered Endpoint Monitors
-            </h3>
+            <h2 className="text-base font-semibold text-slate-900">
+              Monitored Endpoints Status
+            </h2>
             <p className="text-xs text-slate-500">
-              External HTTP probes running on 30s-120s synthetic intervals
+              Health check availability and response times for registered API routes
             </p>
           </div>
           <Link
             href="/monitors"
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
           >
-            <span>View All Endpoints</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <Radio className="w-3.5 h-3.5" />
+            <span>Manage All Monitors</span>
           </Link>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 uppercase font-mono tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
+            <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="p-3">Method & Name</th>
-                <th className="p-3">URL</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Last Code</th>
-                <th className="p-3">Latency</th>
-                <th className="p-3">Uptime</th>
-                <th className="p-3">Last Checked</th>
+                <th className="p-4">Endpoint</th>
+                <th className="p-4">Target URL</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Last Response</th>
+                <th className="p-4">Latency</th>
+                <th className="p-4">30-Day Uptime</th>
+                <th className="p-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+            <tbody className="divide-y divide-slate-100">
               {endpoints.map((ep) => (
-                <tr
-                  key={ep.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                >
-                  <td className="p-3 font-sans font-medium text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                    <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 mr-2">
-                      {ep.method}
-                    </span>
-                    <Link href={`/monitors/${ep.id}`} className="hover:underline">
-                      {ep.name}
-                    </Link>
+                <tr key={ep.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                        {ep.method}
+                      </span>
+                      <Link
+                        href={`/monitors/${ep.id}`}
+                        className="font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+                      >
+                        {ep.name}
+                      </Link>
+                    </div>
                   </td>
-                  <td className="p-3 text-slate-500 truncate max-w-xs">{ep.url}</td>
-                  <td className="p-3 whitespace-nowrap">
+                  <td className="p-4 text-slate-500 font-mono text-xs truncate max-w-xs">
+                    {ep.url}
+                  </td>
+                  <td className="p-4">
                     <StatusBadge status={ep.status} />
                   </td>
-                  <td className="p-3">
+                  <td className="p-4">
                     <span
-                      className={`font-bold ${
-                        ep.last_status_code >= 400
-                          ? 'text-rose-600 dark:text-rose-400'
-                          : 'text-emerald-600 dark:text-emerald-400'
+                      className={`font-mono font-bold ${
+                        ep.last_status_code >= 400 ? 'text-rose-600' : 'text-emerald-600'
                       }`}
                     >
                       {ep.last_status_code}
                     </span>
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-400">
+                  <td className="p-4 font-mono text-slate-600">
                     {formatLatency(ep.last_latency_ms)}
                   </td>
-                  <td className="p-3 font-semibold text-slate-700 dark:text-slate-300">
+                  <td className="p-4 font-semibold text-slate-700 font-mono">
                     {formatPercentage(ep.uptime_percentage)}
                   </td>
-                  <td className="p-3 text-slate-400 font-sans text-[11px] whitespace-nowrap">
-                    {formatDate(ep.last_checked_at)}
+                  <td className="p-4 text-right">
+                    <Link
+                      href={`/monitors/${ep.id}`}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800"
+                    >
+                      <span>Inspect</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
                   </td>
                 </tr>
               ))}
