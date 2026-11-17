@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from sqlalchemy.orm import Session
 from app.models.failure_dna import FailureFingerprint
 from app.models.incident import Incident, IncidentResolution
