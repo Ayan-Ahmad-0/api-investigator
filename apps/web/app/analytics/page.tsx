@@ -33,71 +33,71 @@ export default function AnalyticsPage() {
 
   if (loading || !analytics) {
     return (
-      <div className="space-y-4">
-        <div className="h-6 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+      <div className="space-y-6">
+        <div className="h-6 w-36 bg-slate-200 rounded animate-pulse" />
+        <div className="h-64 bg-slate-200 rounded-xl animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            System Performance & Reliability Analytics
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Performance & Reliability Analytics
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Aggregated latency distributions, failure trends, and endpoint degradation statistics
+          <p className="text-sm text-slate-500 mt-1">
+            Aggregated latency percentiles, error rate trends, and endpoint degradation rankings
           </p>
         </div>
 
-        <div className="text-xs font-mono text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded border border-slate-200 dark:border-slate-800">
-          Sample: 18,450 Events
+        <div className="text-xs font-mono text-slate-500 bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-2xs">
+          Sample: 18,450 Events Analyzed
         </div>
       </div>
 
       {/* Latency Percentiles Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            P50 Median Latency
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div className="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Median (P50) Latency
           </span>
-          <div className="mt-2 text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">
+          <div className="mt-2 text-3xl font-bold font-mono text-slate-900">
             {formatLatency(analytics.average_latency_ms)}
           </div>
-          <div className="mt-1 text-xs text-slate-500">Fast path baseline</div>
+          <div className="mt-2 text-xs text-slate-500">Fast path baseline</div>
         </div>
 
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <div className="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             P95 Tail Latency
           </span>
-          <div className="mt-2 text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">
+          <div className="mt-2 text-3xl font-bold font-mono text-amber-600">
             {formatLatency(analytics.p95_latency_ms)}
           </div>
-          <div className="mt-1 text-xs text-slate-500">Service SLA target: &lt; 500ms</div>
+          <div className="mt-2 text-xs text-slate-500">SLA target: &lt; 500ms</div>
         </div>
 
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            P99 Spike Latency
+        <div className="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            P99 Latency Spike
           </span>
-          <div className="mt-2 text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
+          <div className="mt-2 text-3xl font-bold font-mono text-rose-600">
             {formatLatency(analytics.p99_latency_ms)}
           </div>
-          <div className="mt-1 text-xs text-slate-500">Worst-case query delay</div>
+          <div className="mt-2 text-xs text-slate-500">Checkout peak delay</div>
         </div>
 
-        <div className="p-4 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <div className="p-5 rounded-xl border border-slate-200 bg-white shadow-2xs">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
             Aggregate Error Rate
           </span>
-          <div className="mt-2 text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">
+          <div className="mt-2 text-3xl font-bold font-mono text-slate-900">
             {formatPercentage(analytics.error_rate_percentage)}
           </div>
-          <div className="mt-1 text-xs text-slate-500">Across all probes</div>
+          <div className="mt-2 text-xs text-slate-500">Across all routes</div>
         </div>
       </div>
 
@@ -108,46 +108,46 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Failing Endpoints */}
-      <div className="border border-slate-200 dark:border-slate-800 rounded bg-white dark:bg-slate-900 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-2xs">
+        <div className="p-5 border-b border-slate-200">
+          <h3 className="text-base font-bold text-slate-900">
             Top Failing Endpoints (Degradation Ranking)
           </h3>
           <p className="text-xs text-slate-500">
-            Ranked by consecutive failure volume and percentage error rate in the selected window
+            Ranked by consecutive failure volume and percentage error rate in the selected time window
           </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 uppercase font-mono tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
+            <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200">
               <tr>
-                <th className="p-3">Rank</th>
-                <th className="p-3">Endpoint Name</th>
-                <th className="p-3">Normalized Route</th>
-                <th className="p-3">Failed Checks Count</th>
-                <th className="p-3">Error Rate</th>
-                <th className="p-3 text-right">Trend</th>
+                <th className="p-4">Rank</th>
+                <th className="p-4">Endpoint Name</th>
+                <th className="p-4">Normalized Route</th>
+                <th className="p-4">Failed Checks</th>
+                <th className="p-4">Error Rate</th>
+                <th className="p-4 text-right">Trend</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+            <tbody className="divide-y divide-slate-100 font-mono">
               {analytics.top_failing_endpoints.map((ep, idx) => (
                 <tr
                   key={ep.route}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                  className="hover:bg-slate-50/80 transition-colors"
                 >
-                  <td className="p-3 text-slate-400 font-bold">#{idx + 1}</td>
-                  <td className="p-3 font-sans font-medium text-slate-900 dark:text-slate-100">
+                  <td className="p-4 text-slate-400 font-bold">#{idx + 1}</td>
+                  <td className="p-4 font-sans font-semibold text-slate-900">
                     {ep.endpoint_name}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">{ep.route}</td>
-                  <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">
+                  <td className="p-4 text-slate-600">{ep.route}</td>
+                  <td className="p-4 text-rose-600 font-bold">
                     {ep.error_count} failures
                   </td>
-                  <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">
+                  <td className="p-4 text-rose-600 font-bold">
                     {formatPercentage(ep.error_rate)}
                   </td>
-                  <td className="p-3 text-right text-rose-500 font-sans text-xs">
+                  <td className="p-4 text-right text-rose-600 font-sans text-xs font-medium">
                     Spiking post-deploy
                   </td>
                 </tr>
