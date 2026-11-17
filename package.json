@@ -1,0 +1,31 @@
+{
+  "name": "api-investigator-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API Investigator - API reliability, monitoring, failure reproduction, and AI investigation platform",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build:web": "npm run build --workspace=apps/web",
+    "start:web": "npm run start --workspace=apps/web",
+    "dev:api": "cd apps/api && uvicorn app.main:app --reload --port 8000",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build",
+    "docker:logs": "docker compose logs -f",
+    "db:up": "docker compose up -d postgres redis",
+    "db:seed": "python apps/api/app/db/seed.py",
+    "test:api": "pytest apps/api/tests",
+    "test": "npm run test:api"
+  },
+  "keywords": [
+    "api-monitoring",
+    "telemetry",
+    "incident-investigation",
+    "failure-reproduction",
+    "opentelemetry"
+  ],
+  "license": "MIT"
+}
