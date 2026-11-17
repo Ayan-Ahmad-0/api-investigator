@@ -42,6 +42,7 @@ ENV/
 *.sqlite3
 
 # Node / Next.js
+*.tsbuildinfo
 node_modules/
 .next/
 out/
