@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, ForeignKey, Integer, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship as orm_relationship
 from app.core.database import Base
 
 
@@ -22,9 +22,9 @@ class Investigation(Base):
     created_by = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    incident = relationship("Incident", back_populates="investigations")
-    hypotheses = relationship("Hypothesis", back_populates="investigation", cascade="all, delete-orphan", order_by="Hypothesis.rank")
-    evidence_items = relationship("Evidence", back_populates="investigation", cascade="all, delete-orphan")
+    incident = orm_relationship("Incident", back_populates="investigations")
+    hypotheses = orm_relationship("Hypothesis", back_populates="investigation", cascade="all, delete-orphan", order_by="Hypothesis.rank")
+    evidence_items = orm_relationship("Evidence", back_populates="investigation", cascade="all, delete-orphan")
 
 
 class Hypothesis(Base):
@@ -38,7 +38,7 @@ class Hypothesis(Base):
     rank = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    investigation = relationship("Investigation", back_populates="hypotheses")
+    investigation = orm_relationship("Investigation", back_populates="hypotheses")
 
 
 class Evidence(Base):
@@ -55,4 +55,4 @@ class Evidence(Base):
     relationship = Column(String(20), default="neutral", nullable=False)  # supporting, contradicting, neutral
     metadata_json = Column(Text, nullable=True)
 
-    investigation = relationship("Investigation", back_populates="evidence_items")
+    investigation = orm_relationship("Investigation", back_populates="evidence_items")
