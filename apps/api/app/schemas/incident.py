@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class IncidentCreate(BaseModel):
@@ -37,8 +37,7 @@ class IncidentEventResponse(BaseModel):
     summary: str
     metadata_json: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class IncidentResolutionResponse(BaseModel):
@@ -50,8 +49,7 @@ class IncidentResolutionResponse(BaseModel):
     resolved_by: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class IncidentResponse(BaseModel):
@@ -72,5 +70,4 @@ class IncidentResponse(BaseModel):
     events: Optional[List[IncidentEventResponse]] = None
     resolution: Optional[IncidentResolutionResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
