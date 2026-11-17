@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "api-investigator"
+version = "0.1.0"
+description = "Python client SDK for API Investigator: automated telemetry ingestion, failure reproduction, and AI incident investigation."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "httpx>=0.24.0",
+    "starlette>=0.27.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "fastapi>=0.100.0",
+]
