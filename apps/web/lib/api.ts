@@ -133,6 +133,14 @@ export const api = {
     );
   },
 
+  async deleteEndpoint(endpointId: string): Promise<{ success: boolean }> {
+    return fetchWithFallback<{ success: boolean }>(
+      `/api/v1/endpoints/${endpointId}`,
+      { method: 'DELETE' },
+      { success: true }
+    );
+  },
+
   async getEndpointChecks(endpointId: string): Promise<CheckResult[]> {
     const fallback = mockChecks.filter((c) => c.endpoint_id === endpointId);
     return fetchWithFallback<CheckResult[]>(
