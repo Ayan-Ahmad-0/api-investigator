@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class EndpointCreate(BaseModel):
@@ -22,8 +22,7 @@ class EndpointResponse(BaseModel):
     last_latency_ms: Optional[float] = None
     success_rate: Optional[float] = 100.0
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MonitorCreate(BaseModel):
@@ -63,8 +62,7 @@ class ApiCheckResponse(BaseModel):
     error_category: Optional[str] = None
     sanitized_response_sample: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MonitorResponse(BaseModel):
@@ -84,5 +82,4 @@ class MonitorResponse(BaseModel):
     last_latency_ms: Optional[float] = None
     last_checked_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

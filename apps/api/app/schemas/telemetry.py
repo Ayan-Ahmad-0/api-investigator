@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class TelemetryIngestEvent(BaseModel):
@@ -53,5 +53,4 @@ class TelemetryEventResponse(BaseModel):
     trace_id: Optional[str] = None
     fingerprint: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
