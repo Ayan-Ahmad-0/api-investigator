@@ -33,6 +33,10 @@ app.add_middleware(
 # Mount API v1 routes
 app.include_router(api_v1_router)
 
+# Mount local demo test service simulator (specification section 25)
+app.include_router(demo_router, prefix="/demo")
+app.include_router(demo_router)
+
 
 @app.get("/")
 def root():
