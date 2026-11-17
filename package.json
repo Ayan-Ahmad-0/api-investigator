@@ -17,6 +17,8 @@
     "docker:logs": "docker compose logs -f",
     "db:up": "docker compose up -d postgres redis",
     "db:seed": "python apps/api/app/db/seed.py",
+    "db:seed:reset": "python apps/api/app/db/seed.py --reset",
+    "typecheck:web": "npm run typecheck --workspace=apps/web",
     "test:api": "pytest apps/api/tests",
     "test": "npm run test:api"
   },
