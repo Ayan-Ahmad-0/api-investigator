@@ -157,7 +157,7 @@ export default function EndpointDetailPage() {
               {checks.map((chk) => (
                 <tr key={chk.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="p-4 text-slate-500 whitespace-nowrap text-xs">
-                    {formatDate(chk.checked_at)}
+                    {formatDate(chk.timestamp)}
                   </td>
                   <td className="p-4 whitespace-nowrap">
                     {chk.is_success ? (
