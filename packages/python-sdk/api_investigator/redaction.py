@@ -60,7 +60,10 @@ def sanitize_headers(headers: Dict[str, str]) -> Dict[str, str]:
     for k, v in headers.items():
         key_lower = k.lower().replace("-", "_")
         if any(s in key_lower for s in SENSITIVE_KEYS):
-            sanitized[k] = "<REDACTED>"
+            if str(v).strip().lower().startswith("bearer "):
+                sanitized[k] = "Bearer <REDACTED>"
+            else:
+                sanitized[k] = "<REDACTED>"
         else:
             sanitized[k] = sanitize_string(str(v))
     return sanitized
