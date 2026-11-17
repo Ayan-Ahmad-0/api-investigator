@@ -3,6 +3,11 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 
 
+class InvestigationCreate(BaseModel):
+    provider: Optional[str] = "mock"
+    model: Optional[str] = "gemini-1.5-pro"
+
+
 class HypothesisSchema(BaseModel):
     title: str
     confidence: str = Field(pattern="^(low|medium|high)$")
