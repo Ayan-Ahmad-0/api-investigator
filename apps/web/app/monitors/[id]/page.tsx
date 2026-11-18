@@ -63,8 +63,8 @@ export default function EndpointDetailPage() {
   if (loading || !endpoint) {
     return (
       <div className="space-y-6">
-        <div className="h-6 w-36 bg-slate-200 rounded animate-pulse" />
-        <div className="h-40 bg-slate-200 rounded-xl animate-pulse" />
+        <div className="h-6 w-36 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+        <div className="h-40 bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
       </div>
     );
   }
@@ -80,20 +80,20 @@ export default function EndpointDetailPage() {
     <div className="space-y-6">
       {/* Breadcrumb & Actions */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <Link href="/monitors" className="hover:text-slate-900 flex items-center gap-1 font-medium">
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <Link href="/monitors" className="hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to All Monitors</span>
           </Link>
           <span>/</span>
-          <span className="font-mono text-slate-700 font-semibold">{endpoint.name}</span>
+          <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{endpoint.name}</span>
         </div>
 
         <button
           type="button"
           onClick={handleDelete}
           disabled={isDeleting}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-transparent transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 border border-rose-200 dark:border-rose-900/60 hover:border-transparent transition-colors disabled:opacity-50"
         >
           <Trash2 className="w-3.5 h-3.5" />
           <span>{isDeleting ? 'Deleting...' : 'Delete Monitor'}</span>
@@ -101,11 +101,11 @@ export default function EndpointDetailPage() {
       </div>
 
       {/* Header Profile */}
-      <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 {endpoint.method}
               </span>
               <StatusBadge status={endpoint.status} />
@@ -113,22 +113,22 @@ export default function EndpointDetailPage() {
                 Env: {endpoint.environment}
               </span>
             </div>
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
               {endpoint.name}
             </h1>
-            <p className="text-xs font-mono text-slate-500 mt-1 select-all">{endpoint.url}</p>
+            <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 select-all">{endpoint.url}</p>
           </div>
 
           <div className="flex items-center gap-4 text-xs font-mono">
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center min-w-[100px]">
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center min-w-[100px]">
               <span className="text-[11px] text-slate-400 uppercase tracking-wider block mb-0.5">30d Uptime</span>
-              <span className="text-base font-bold text-slate-900">
+              <span className="text-base font-bold text-slate-900 dark:text-white">
                 {formatPercentage(endpoint.uptime_percentage)}
               </span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-center min-w-[100px]">
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center min-w-[100px]">
               <span className="text-[11px] text-slate-400 uppercase tracking-wider block mb-0.5">Last Latency</span>
-              <span className="text-base font-bold text-slate-900">
+              <span className="text-base font-bold text-slate-900 dark:text-white">
                 {formatLatency(endpoint.last_latency_ms)}
               </span>
             </div>
@@ -139,19 +139,19 @@ export default function EndpointDetailPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div>
             <span className="text-slate-400 block mb-0.5">Check Interval</span>
-            <span className="font-semibold text-slate-800">Every {endpoint.interval_seconds} seconds</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">Every {endpoint.interval_seconds} seconds</span>
           </div>
           <div>
             <span className="text-slate-400 block mb-0.5">Timeout Threshold</span>
-            <span className="font-semibold text-slate-800">{endpoint.timeout_seconds}s</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">{endpoint.timeout_seconds}s</span>
           </div>
           <div>
             <span className="text-slate-400 block mb-0.5">Expected HTTP Code</span>
-            <span className="font-mono font-bold text-emerald-600">{endpoint.expected_status} OK</span>
+            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{endpoint.expected_status} OK</span>
           </div>
           <div>
             <span className="text-slate-400 block mb-0.5">Last Check Timestamp</span>
-            <span className="font-mono text-slate-700">{formatDate(endpoint.last_checked_at)}</span>
+            <span className="font-mono text-slate-700 dark:text-slate-300">{formatDate(endpoint.last_checked_at)}</span>
           </div>
         </div>
       </div>
@@ -160,19 +160,19 @@ export default function EndpointDetailPage() {
       <LatencyChart data={sampleLatencyData} height={200} />
 
       {/* Check History Logs Table */}
-      <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-2xs">
-        <div className="p-5 border-b border-slate-200">
-          <h3 className="text-base font-bold text-slate-900">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
+        <div className="p-5 border-b border-slate-200 dark:border-slate-800">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">
             Recent Synthetic Probe Check History
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Detailed log of the last synthetic probes dispatched against this endpoint
           </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="p-4">Timestamp</th>
                 <th className="p-4">Result</th>
@@ -182,20 +182,20 @@ export default function EndpointDetailPage() {
                 <th className="p-4">Error Diagnostics</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-mono">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
               {checks.map((chk) => (
-                <tr key={chk.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-4 text-slate-500 whitespace-nowrap text-xs">
+                <tr key={chk.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                  <td className="p-4 text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs">
                     {formatDate(chk.timestamp)}
                   </td>
                   <td className="p-4 whitespace-nowrap">
                     {chk.is_success ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 font-sans">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-sans">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Pass</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 font-sans">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-sans">
                         <XCircle className="w-3.5 h-3.5" />
                         <span>Failed</span>
                       </span>
@@ -204,25 +204,25 @@ export default function EndpointDetailPage() {
                   <td className="p-4">
                     <span
                       className={`font-bold ${
-                        chk.status_code >= 400 ? 'text-rose-600' : 'text-emerald-600'
+                        chk.status_code >= 400 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
                       }`}
                     >
                       {chk.status_code || 'ERR'}
                     </span>
                   </td>
-                  <td className="p-4 text-slate-700">
+                  <td className="p-4 text-slate-700 dark:text-slate-300">
                     {formatLatency(chk.latency_ms)}
                   </td>
-                  <td className="p-4 text-slate-500 text-xs">
-                    <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-600">
+                  <td className="p-4 text-slate-500 dark:text-slate-400 text-xs">
+                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                       content-type: application/json
                     </span>
                   </td>
-                  <td className="p-4 text-slate-500 font-sans text-xs">
+                  <td className="p-4 text-slate-500 dark:text-slate-400 font-sans text-xs">
                     {chk.error_message ? (
-                      <span className="text-rose-600 font-medium">{chk.error_message}</span>
+                      <span className="text-rose-600 dark:text-rose-400 font-medium">{chk.error_message}</span>
                     ) : (
-                      <span className="text-slate-400">None (Healthy check)</span>
+                      <span className="text-slate-400 dark:text-slate-500">None (Healthy check)</span>
                     )}
                   </td>
                 </tr>
