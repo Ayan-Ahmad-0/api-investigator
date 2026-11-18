@@ -108,53 +108,53 @@ app.add_middleware(investigator.fastapi_middleware())`;
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Project Settings & API Keys
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Manage authentication credentials, telemetry ingestion endpoints, and SDK integration
           </p>
         </div>
 
-        <div className="text-xs font-mono text-slate-600 bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-2xs">
+        <div className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-800 shadow-2xs">
           Workspace: acme_engineering
         </div>
       </div>
 
       {/* General Config */}
-      <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-2xs">
-        <h3 className="text-base font-bold text-slate-900 mb-4">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-2xs">
+        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">
           General Project Configuration
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
           <div>
-            <span className="text-slate-400 block mb-1">Project Name</span>
-            <span className="font-semibold text-slate-900 text-sm">{project.name}</span>
+            <span className="text-slate-400 dark:text-slate-500 block mb-1">Project Name</span>
+            <span className="font-semibold text-slate-900 dark:text-white text-sm">{project.name}</span>
           </div>
           <div>
-            <span className="text-slate-400 block mb-1">Project Identifier</span>
-            <span className="font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            <span className="text-slate-400 dark:text-slate-500 block mb-1">Project Identifier</span>
+            <span className="font-mono text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
               {project.slug}
             </span>
           </div>
           <div>
-            <span className="text-slate-400 block mb-1">Data Retention Window</span>
-            <span className="font-medium text-slate-700">30 days rolling</span>
+            <span className="text-slate-400 dark:text-slate-500 block mb-1">Data Retention Window</span>
+            <span className="font-medium text-slate-700 dark:text-slate-300">30 days rolling</span>
           </div>
         </div>
       </div>
 
       {/* API Ingestion Keys */}
-      <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-2xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-2xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Key className="w-4 h-4 text-blue-600" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span>Telemetry Ingestion API Keys</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Project-scoped write credentials used by client SDKs to safely send application telemetry
             </p>
           </div>
@@ -173,7 +173,7 @@ app.add_middleware(investigator.fastapi_middleware())`;
         {isCreatingKey && (
           <form
             onSubmit={handleCreateKey}
-            className="p-4 rounded-lg bg-slate-50 border border-slate-200 flex items-center gap-3 text-xs"
+            className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3 text-xs"
           >
             <input
               type="text"
@@ -181,7 +181,7 @@ app.add_middleware(investigator.fastapi_middleware())`;
               placeholder="Key label (e.g. Kubernetes Cluster Production Ingest)"
               value={newKeyName}
               onChange={(e) => setNewKeyName(e.target.value)}
-              className="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
             <button
               type="submit"
@@ -192,7 +192,7 @@ app.add_middleware(investigator.fastapi_middleware())`;
             <button
               type="button"
               onClick={() => setIsCreatingKey(false)}
-              className="px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-200 transition-colors"
+              className="px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
               Cancel
             </button>
@@ -200,9 +200,9 @@ app.add_middleware(investigator.fastapi_middleware())`;
         )}
 
         {/* API Keys Table */}
-        <div className="border border-slate-200 rounded-lg overflow-hidden">
+        <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200">
+            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="p-4">Key Label</th>
                 <th className="p-4">Secret Token (Masked)</th>
@@ -211,30 +211,30 @@ app.add_middleware(investigator.fastapi_middleware())`;
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {apiKeys.map((key) => (
-                <tr key={key.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="p-4 font-semibold text-slate-900">{key.name}</td>
+                <tr key={key.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="p-4 font-semibold text-slate-900 dark:text-white">{key.name}</td>
                   <td className="p-4">
-                    <span className="font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-700 text-xs">
+                    <span className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs">
                       {key.masked_key}
                     </span>
                   </td>
-                  <td className="p-4 text-slate-500 font-mono text-xs">
+                  <td className="p-4 text-slate-500 dark:text-slate-400 font-mono text-xs">
                     {formatDate(key.created_at)}
                   </td>
-                  <td className="p-4 text-slate-500 font-mono text-xs">
+                  <td className="p-4 text-slate-500 dark:text-slate-400 font-mono text-xs">
                     {key.last_used_at ? formatDate(key.last_used_at) : 'Never'}
                   </td>
                   <td className="p-4 text-right whitespace-nowrap space-x-2">
                     <button
                       type="button"
                       onClick={() => handleCopy(key.masked_key, key.id)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
                     >
                       {copiedKeyId === key.id ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           <span>Copied</span>
                         </>
                       ) : (
@@ -261,12 +261,12 @@ app.add_middleware(investigator.fastapi_middleware())`;
       </div>
 
       {/* Code Integration Guide */}
-      <div className="border border-slate-200 rounded-xl bg-white p-6 shadow-2xs space-y-6">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-2xs space-y-6">
         <div>
-          <h3 className="text-base font-bold text-slate-900">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">
             Quick Integration Snippets
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Send application telemetry automatically with our non-blocking Python SDK or via direct HTTP
           </p>
         </div>
@@ -274,7 +274,7 @@ app.add_middleware(investigator.fastapi_middleware())`;
         {/* Python Snippet */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-800">
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
               Python / FastAPI Middleware Integration
             </span>
             <button
@@ -303,7 +303,7 @@ app.add_middleware(investigator.fastapi_middleware())`;
         {/* cURL Snippet */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-800">
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
               Direct HTTP Ingestion via cURL
             </span>
             <button
