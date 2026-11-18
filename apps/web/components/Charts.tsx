@@ -21,7 +21,7 @@ export const LatencyChart: React.FC<LatencyChartProps> = ({ data, height = 180 }
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-slate-400 border border-slate-200 rounded-xl bg-white shadow-2xs">
+      <div className="h-44 flex items-center justify-center text-xs text-slate-400 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-2xs">
         No latency data in this time window
       </div>
     );
@@ -46,22 +46,22 @@ export const LatencyChart: React.FC<LatencyChartProps> = ({ data, height = 180 }
   }).join(' ');
 
   return (
-    <div className="relative border border-slate-200 rounded-xl bg-white p-5 shadow-2xs">
+    <div className="relative border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-2xs">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+          <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
             Response Time Trend
           </h4>
-          <p className="text-xs text-slate-500">Median (P50) vs Tail Latency (P95)</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Median (P50) vs Tail Latency (P95)</p>
         </div>
         <div className="flex items-center gap-4 text-xs font-medium">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-1 bg-blue-600 rounded-full inline-block" />
-            <span className="text-slate-600">P50 Median</span>
+            <span className="text-slate-600 dark:text-slate-300">P50 Median</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-1 bg-amber-500 rounded-full inline-block" />
-            <span className="text-slate-600">P95 Tail</span>
+            <span className="text-slate-600 dark:text-slate-300">P95 Tail</span>
           </div>
         </div>
       </div>
@@ -82,14 +82,14 @@ export const LatencyChart: React.FC<LatencyChartProps> = ({ data, height = 180 }
                   y1={yPos}
                   x2={width - padding.right}
                   y2={yPos}
-                  stroke="#f1f5f9"
-                  strokeWidth="1"
+                  stroke="currentColor"
+                  className="text-slate-100 dark:text-slate-800 stroke-1"
                 />
                 <text
                   x={padding.left - 8}
                   y={yPos + 4}
                   textAnchor="end"
-                  className="text-[11px] fill-slate-400 font-mono"
+                  className="text-[11px] fill-slate-400 dark:fill-slate-500 font-mono"
                 >
                   {formatLatency(yVal)}
                 </text>
@@ -126,7 +126,7 @@ export const LatencyChart: React.FC<LatencyChartProps> = ({ data, height = 180 }
                 x={x}
                 y={height - 5}
                 textAnchor="middle"
-                className="text-[11px] fill-slate-400 font-mono"
+                className="text-[11px] fill-slate-400 dark:fill-slate-500 font-mono"
               >
                 {d.timestamp}
               </text>
@@ -154,13 +154,13 @@ export const LatencyChart: React.FC<LatencyChartProps> = ({ data, height = 180 }
       </div>
 
       {hoveredIdx !== null && (
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-          <span className="text-slate-500">Window: {data[hoveredIdx].timestamp}</span>
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-mono">
+          <span className="text-slate-500 dark:text-slate-400">Window: {data[hoveredIdx].timestamp}</span>
           <div className="flex gap-4">
-            <span className="text-blue-600 font-bold">
+            <span className="text-blue-600 dark:text-blue-400 font-bold">
               P50: {formatLatency(data[hoveredIdx].p50 || 0)}
             </span>
-            <span className="text-amber-600 font-bold">
+            <span className="text-amber-600 dark:text-amber-400 font-bold">
               P95: {formatLatency(data[hoveredIdx].p95 || 0)}
             </span>
           </div>
@@ -180,7 +180,7 @@ export const ErrorRateChart: React.FC<ErrorRateChartProps> = ({ data, height = 1
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-slate-400 border border-slate-200 rounded-xl bg-white shadow-2xs">
+      <div className="h-44 flex items-center justify-center text-xs text-slate-400 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-2xs">
         No error rate telemetry in this time window
       </div>
     );
@@ -199,17 +199,17 @@ export const ErrorRateChart: React.FC<ErrorRateChartProps> = ({ data, height = 1
   }).join(' ');
 
   return (
-    <div className="relative border border-slate-200 rounded-xl bg-white p-5 shadow-2xs">
+    <div className="relative border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 p-5 shadow-2xs">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+          <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
             Failure Rate Spikes
           </h4>
-          <p className="text-xs text-slate-500">Percentage of calls returning HTTP 4xx/5xx</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Percentage of calls returning HTTP 4xx/5xx</p>
         </div>
         <div className="flex items-center gap-1.5 text-xs font-medium">
           <span className="w-2.5 h-1 bg-rose-500 rounded-full inline-block" />
-          <span className="text-slate-600">Failure %</span>
+          <span className="text-slate-600 dark:text-slate-300">Failure %</span>
         </div>
       </div>
 
@@ -229,14 +229,14 @@ export const ErrorRateChart: React.FC<ErrorRateChartProps> = ({ data, height = 1
                   y1={yPos}
                   x2={width - padding.right}
                   y2={yPos}
-                  stroke="#f1f5f9"
-                  strokeWidth="1"
+                  stroke="currentColor"
+                  className="text-slate-100 dark:text-slate-800 stroke-1"
                 />
                 <text
                   x={padding.left - 8}
                   y={yPos + 4}
                   textAnchor="end"
-                  className="text-[11px] fill-slate-400 font-mono"
+                  className="text-[11px] fill-slate-400 dark:fill-slate-500 font-mono"
                 >
                   {formatPercentage(yVal)}
                 </text>
@@ -263,7 +263,7 @@ export const ErrorRateChart: React.FC<ErrorRateChartProps> = ({ data, height = 1
                 x={x}
                 y={height - 5}
                 textAnchor="middle"
-                className="text-[11px] fill-slate-400 font-mono"
+                className="text-[11px] fill-slate-400 dark:fill-slate-500 font-mono"
               >
                 {d.timestamp}
               </text>
@@ -291,9 +291,9 @@ export const ErrorRateChart: React.FC<ErrorRateChartProps> = ({ data, height = 1
       </div>
 
       {hoveredIdx !== null && (
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-          <span className="text-slate-500">Time: {data[hoveredIdx].timestamp}</span>
-          <span className="text-rose-600 font-bold">
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-mono">
+          <span className="text-slate-500 dark:text-slate-400">Time: {data[hoveredIdx].timestamp}</span>
+          <span className="text-rose-600 dark:text-rose-400 font-bold">
             Failure Rate: {formatPercentage(data[hoveredIdx].error_rate || 0)}
           </span>
         </div>
