@@ -8,8 +8,20 @@ from app.models.investigation import Investigation
 from app.models.incident import Incident
 from app.schemas.investigation import InvestigationResponse
 from app.services.investigation_service import run_investigation
+from app.services.llm_client import get_llm_status, PROVIDER_PRESETS
 
 router = APIRouter(tags=["AI Investigations"])
+
+
+@router.get("/investigations/config/providers")
+def get_ai_providers_status(
+    current_user: User = Depends(get_current_user),
+):
+    """Returns active AI provider and supported alternative presets."""
+    return {
+        "active": get_llm_status(),
+        "supported_presets": list(PROVIDER_PRESETS.keys()) + ["mock", "custom"],
+    }
 
 
 @router.post("/incidents/{incident_id}/investigations", response_model=InvestigationResponse, status_code=status.HTTP_201_CREATED)

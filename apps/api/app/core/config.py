@@ -15,7 +15,14 @@ class Settings(BaseSettings):
 
     AI_PROVIDER: str = "mock"
     AI_API_KEY: str = ""
-    AI_MODEL: str = "gemini-2.5-flash"
+    AI_MODEL: str = ""
+    AI_BASE_URL: str = ""
+    AI_TIMEOUT_SECONDS: int = 30
+
+    # Common provider key aliases
+    GROQ_API_KEY: str = ""
+    GROK_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
 
     INGESTION_KEY_HASH_SECRET: str = "dev-ingestion-hash-salt-investigator"
     ENCRYPTION_KEY: str = "dev-encryption-key-for-credentials-32b"

@@ -9,6 +9,7 @@ from app.models.telemetry import TelemetryEvent
 from app.models.endpoint import ApiEndpoint, Monitor, ApiCheck
 from app.models.deployment import Deployment
 from app.services.failure_dna_service import find_similar_incidents
+from app.services.llm_client import analyze_incident_with_llm, resolve_llm_config
 
 
 # --------------------------------------------------------------------------
@@ -261,57 +262,91 @@ def run_investigation(
 
     db.flush()  # assign IDs to evidence_records
 
-    # Generate Calibrated Hypotheses based on gathered evidence
+    # Generate Hypotheses based on gathered evidence
     supporting_ids = [e.id for e in evidence_records]
+    active_provider, _, active_model, _ = resolve_llm_config()
 
-    # Check top error patterns
-    primary_exc = related_errors[0]["exception_type"] if related_errors else None
-    primary_status = related_errors[0]["status_code"] if related_errors else None
+    # Attempt LLM-assisted synthesis if configured
+    llm_analysis = None
+    if active_provider != "mock":
+        incident_ctx = {
+            "id": incident.id,
+            "title": incident.title,
+            "severity": incident.severity,
+            "affected_route": incident.endpoint.route_template if incident.endpoint else "unknown",
+            "started_at": str(incident.started_at),
+        }
+        evidence_ctx = {
+            "metrics": metrics_data,
+            "top_errors": related_errors[:5],
+            "recent_deployments": deployments[:3],
+            "similar_incidents": similar_incidents,
+        }
+        llm_analysis = analyze_incident_with_llm(incident_ctx, evidence_ctx)
 
-    if primary_exc in ["DatabaseError", "OperationalError", "TimeoutError"] or (primary_status == 504):
-        h1 = {
-            "title": "Downstream Database or Upstream Service Latency/Exhaustion",
-            "confidence": "high",
-            "explanation": f"Observed exception '{primary_exc or f'HTTP {primary_status}'}' with elevated latency suggests downstream dependency timeout or connection pool exhaustion.",
-            "supporting_evidence_ids": supporting_ids,
-            "contradicting_evidence_ids": [],
-            "missing_evidence": ["Database connection pool saturation telemetry", "Slow query log samples"],
-            "verification_steps": [
-                "Inspect database connection pool metrics for active and idle connection exhaustion.",
-                "Review slow query logs for queries executing longer than the client socket timeout.",
-                "Check whether read-replica lag or lock contention occurred during the incident window.",
-            ],
-        }
-        hypotheses.append(h1)
-    elif recent_deploy:
-        h1 = {
-            "title": f"Regression Introduced in Recent Deployment ({recent_deploy['commit_sha']})",
-            "confidence": "medium",
-            "explanation": f"The onset of failures temporally correlates with the deployment of commit {recent_deploy['commit_sha']}. Contract or configuration change may have caused unhandled exceptions.",
-            "supporting_evidence_ids": supporting_ids,
-            "contradicting_evidence_ids": [],
-            "missing_evidence": ["Commit diff inspection", "Environment configuration drift check"],
-            "verification_steps": [
-                f"Review commit {recent_deploy['commit_sha']} git diff for endpoint handler modifications.",
-                "Verify whether environment variables or database schema migrations were deployed with the release.",
-                "Test reproduction package cURL against a rollback staging container.",
-            ],
-        }
-        hypotheses.append(h1)
+    if llm_analysis and "hypotheses" in llm_analysis and len(llm_analysis["hypotheses"]) > 0:
+        investigation.provider = active_provider
+        investigation.model = active_model
+        for h in llm_analysis["hypotheses"]:
+            hypotheses.append({
+                "title": h.get("title", "Diagnosed Anomaly"),
+                "confidence": h.get("confidence", "high" if h.get("probability", 0.5) > 0.7 else "medium"),
+                "explanation": h.get("explanation", ""),
+                "supporting_evidence_ids": supporting_ids,
+                "contradicting_evidence_ids": [],
+                "missing_evidence": h.get("missing_evidence", []),
+                "verification_steps": h.get("verification_steps", []),
+            })
     else:
-        h1 = {
-            "title": "Unhandled Application Exception in Request Handler",
-            "confidence": "medium" if related_errors else "low",
-            "explanation": f"API handler failed with status code {primary_status or 500} when processing request payload.",
-            "supporting_evidence_ids": supporting_ids,
-            "contradicting_evidence_ids": [],
-            "missing_evidence": ["Detailed application stack trace", "Third party dependency response telemetry"],
-            "verification_steps": [
-                "Execute the sanitized failure reproduction cURL against the local development environment.",
-                "Check application error logs for unhandled validation or type exceptions.",
-            ],
-        }
-        hypotheses.append(h1)
+        # Calibrated Heuristic Fallback Engine
+        # Check top error patterns
+        primary_exc = related_errors[0]["exception_type"] if related_errors else None
+        primary_status = related_errors[0]["status_code"] if related_errors else None
+
+        if primary_exc in ["DatabaseError", "OperationalError", "TimeoutError"] or (primary_status == 504):
+            h1 = {
+                "title": "Downstream Database or Upstream Service Latency/Exhaustion",
+                "confidence": "high",
+                "explanation": f"Observed exception '{primary_exc or f'HTTP {primary_status}'}' with elevated latency suggests downstream dependency timeout or connection pool exhaustion.",
+                "supporting_evidence_ids": supporting_ids,
+                "contradicting_evidence_ids": [],
+                "missing_evidence": ["Database connection pool saturation telemetry", "Slow query log samples"],
+                "verification_steps": [
+                    "Inspect database connection pool metrics for active and idle connection exhaustion.",
+                    "Review slow query logs for queries executing longer than the client socket timeout.",
+                    "Check whether read-replica lag or lock contention occurred during the incident window.",
+                ],
+            }
+            hypotheses.append(h1)
+        elif recent_deploy:
+            h1 = {
+                "title": f"Regression Introduced in Recent Deployment ({recent_deploy['commit_sha']})",
+                "confidence": "medium",
+                "explanation": f"The onset of failures temporally correlates with the deployment of commit {recent_deploy['commit_sha']}. Contract or configuration change may have caused unhandled exceptions.",
+                "supporting_evidence_ids": supporting_ids,
+                "contradicting_evidence_ids": [],
+                "missing_evidence": ["Commit diff inspection", "Environment configuration drift check"],
+                "verification_steps": [
+                    f"Review commit {recent_deploy['commit_sha']} git diff for endpoint handler modifications.",
+                    "Verify whether environment variables or database schema migrations were deployed with the release.",
+                    "Test reproduction package cURL against a rollback staging container.",
+                ],
+            }
+            hypotheses.append(h1)
+        else:
+            h1 = {
+                "title": "Unhandled Application Exception in Request Handler",
+                "confidence": "medium" if related_errors else "low",
+                "explanation": f"API handler failed with status code {primary_status or 500} when processing request payload.",
+                "supporting_evidence_ids": supporting_ids,
+                "contradicting_evidence_ids": [],
+                "missing_evidence": ["Detailed application stack trace", "Third party dependency response telemetry"],
+                "verification_steps": [
+                    "Execute the sanitized failure reproduction cURL against the local development environment.",
+                    "Check application error logs for unhandled validation or type exceptions.",
+                ],
+            }
+            hypotheses.append(h1)
 
     # Persist Hypotheses
     for idx, h in enumerate(hypotheses):
@@ -329,8 +364,27 @@ def run_investigation(
     if not affected_routes and incident.endpoint:
         affected_routes.append(incident.endpoint.route_template)
 
+    inc_summary = (
+        llm_analysis.get("summary")
+        if (llm_analysis and llm_analysis.get("summary"))
+        else f"Automated evidence retrieval identified {len(related_errors)} error traces and {metrics_data['failing_checks']} failing external checks."
+    )
+    rec_steps = (
+        llm_analysis.get("verification_steps")
+        if (llm_analysis and llm_analysis.get("verification_steps"))
+        else (hypotheses[0]["verification_steps"] if hypotheses else [])
+    )
+    limitations = (
+        llm_analysis.get("limitations")
+        if (llm_analysis and llm_analysis.get("limitations"))
+        else [
+            "Network-level packet traces were not available for deep TLS analysis.",
+            "Database engine internal query telemetry requires database agent instrumentation.",
+        ]
+    )
+
     report_payload = {
-        "incident_summary": f"Automated evidence retrieval identified {len(related_errors)} error traces and {metrics_data['failing_checks']} failing external checks.",
+        "incident_summary": inc_summary,
         "impact": {
             "affected_endpoints": affected_routes,
             "observed_error_rate": metrics_data["error_rate"],
@@ -340,11 +394,8 @@ def run_investigation(
         "root_cause_hypotheses": hypotheses,
         "timeline_event_ids": [e["id"] for e in timeline_events],
         "similar_incident_ids": [s["incident_id"] for s in similar_incidents],
-        "recommended_next_steps": hypotheses[0]["verification_steps"] if hypotheses else [],
-        "limitations": [
-            "Network-level packet traces were not available for deep TLS analysis.",
-            "Database engine internal query telemetry requires database agent instrumentation.",
-        ],
+        "recommended_next_steps": rec_steps,
+        "limitations": limitations,
         "status": "investigated",
     }
 
