@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  AlertOctagon,
+  AlertCircle,
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  Filter,
+  Clock,
   Search,
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -19,181 +19,184 @@ import { formatDate, formatPercentage } from '@/lib/utils';
 export default function IncidentsPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [severityFilter, setSeverityFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'resolved'>('all');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await api.getIncidents('proj_core_api_prod', statusFilter);
+        const data = await api.getIncidents('proj_core_api_prod');
         setIncidents(data);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [statusFilter]);
+  }, []);
+
+  const activeCount = incidents.filter((i) => i.status !== 'resolved').length;
 
   const filtered = incidents.filter((inc) => {
     const matchesSearch =
       inc.title.toLowerCase().includes(search.toLowerCase()) ||
       inc.affected_route.toLowerCase().includes(search.toLowerCase()) ||
       inc.affected_endpoint_name.toLowerCase().includes(search.toLowerCase());
-    const matchesSeverity = severityFilter === 'all' || inc.severity === severityFilter;
-    return matchesSearch && matchesSeverity;
+
+    const matchesStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'open'
+        ? inc.status !== 'resolved'
+        : inc.status === 'resolved';
+
+    return matchesSearch && matchesStatus;
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Incidents & Triage
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Grouped failure clusters with automated evidence retrieval, stack trace fingerprinting, and reproduction packages
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Track active failure clusters, automated root cause investigations, and resolution history
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-            <span>2 Active Incidents</span>
-          </div>
+          {activeCount > 0 ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+              <span>{activeCount} Active {activeCount === 1 ? 'Incident' : 'Incidents'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>All Systems Operational</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
             type="text"
-            placeholder="Search by incident title, endpoint, or route..."
+            placeholder="Search incidents by title, route, or error..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-xs"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          {/* Status Tabs */}
-          <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
-            {['all', 'open', 'monitoring', 'resolved'].map((st) => (
-              <button
-                key={st}
-                type="button"
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
-                  statusFilter === st
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs font-semibold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                {st}
-              </button>
-            ))}
-          </div>
-
-          {/* Severity selector */}
-          <div className="relative">
-            <select
-              aria-label="Filter Severity"
-              value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 pr-8 text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none"
-            >
-              <option value="all">All Severities</option>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+          <button
+            type="button"
+            onClick={() => setStatusFilter('all')}
+            className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
+              statusFilter === 'all'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            All ({incidents.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('open')}
+            className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
+              statusFilter === 'open'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Active ({activeCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('resolved')}
+            className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
+              statusFilter === 'resolved'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Resolved ({incidents.length - activeCount})
+          </button>
         </div>
       </div>
 
-      {/* Incidents Table */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xs">
-        {loading ? (
-          <div className="p-8 text-center text-xs text-slate-400">Loading incidents...</div>
-        ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-500 dark:text-slate-400">
-            No incidents found matching current filter criteria.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider text-[11px] border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="p-4">Severity</th>
-                  <th className="p-4">Incident Title</th>
-                  <th className="p-4">Affected Route</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Impact / Error Rate</th>
-                  <th className="p-4">Started At</th>
-                  <th className="p-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((incident) => (
-                  <tr
-                    key={incident.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
-                  >
-                    <td className="p-4 whitespace-nowrap">
+      {/* Incidents List Cards */}
+      {loading ? (
+        <div className="p-12 text-center text-xs text-slate-400">Loading incidents...</div>
+      ) : filtered.length === 0 ? (
+        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+          No incidents match your filter.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((incident) => {
+            const isResolved = incident.status === 'resolved';
+            return (
+              <div
+                key={incident.id}
+                className={`p-5 rounded-xl border transition-all shadow-xs ${
+                  isResolved
+                    ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-80 hover:opacity-100'
+                    : 'bg-white dark:bg-slate-900 border-rose-200 dark:border-rose-900/60 hover:border-rose-300'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <SeverityBadge severity={incident.severity} />
-                    </td>
-                    <td className="p-4">
+                      <StatusBadge status={incident.status} />
+                      <span className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        {incident.affected_route}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                       <Link
                         href={`/incidents/${incident.id}`}
-                        className="font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 block transition-colors text-sm"
+                        className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       >
                         {incident.title}
                       </Link>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
-                        {incident.impact_summary}
-                      </p>
-                    </td>
-                    <td className="p-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                      {incident.affected_route}
-                    </td>
-                    <td className="p-4 whitespace-nowrap">
-                      <StatusBadge status={incident.status} />
-                    </td>
-                    <td className="p-4 font-mono whitespace-nowrap">
-                      <span
-                        className={`font-bold ${
-                          incident.error_rate > 5 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        {formatPercentage(incident.error_rate)}
-                      </span>
-                      <span className="text-slate-400 text-xs ml-1">
-                        ({incident.duration_minutes ? `${incident.duration_minutes}m` : 'Active'})
-                      </span>
-                    </td>
-                    <td className="p-4 text-slate-500 dark:text-slate-400 whitespace-nowrap font-mono text-xs">
-                      {formatDate(incident.started_at)}
-                    </td>
-                    <td className="p-4 text-right whitespace-nowrap">
-                      <Link
-                        href={`/incidents/${incident.id}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                      >
-                        <span>Investigate</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                    </h3>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {incident.impact_summary}
+                    </p>
+                  </div>
+
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 shrink-0">
+                    <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                      Started {formatDate(incident.started_at)}
+                    </span>
+
+                    <Link
+                      href={`/incidents/${incident.id}`}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-xs ${
+                        isResolved
+                          ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      <span>{isResolved ? 'View Post-Mortem' : 'Investigate Root Cause'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

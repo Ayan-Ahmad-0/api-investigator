@@ -141,6 +141,21 @@ export const api = {
     );
   },
 
+  async triggerCheck(endpointId: string): Promise<CheckResult> {
+    return fetchWithFallback<CheckResult>(
+      `/api/v1/monitors/${endpointId}/trigger`,
+      { method: 'POST' },
+      {
+        id: `chk_${Date.now()}`,
+        endpoint_id: endpointId,
+        timestamp: new Date().toISOString(),
+        is_success: true,
+        status_code: 200,
+        latency_ms: Math.floor(Math.random() * 80) + 70,
+      }
+    );
+  },
+
   async getEndpointChecks(endpointId: string): Promise<CheckResult[]> {
     const fallback = mockChecks.filter((c) => c.endpoint_id === endpointId);
     return fetchWithFallback<CheckResult[]>(
