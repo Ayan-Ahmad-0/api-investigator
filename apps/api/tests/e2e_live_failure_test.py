@@ -53,7 +53,7 @@ def run_e2e_test():
     print("\n[Step 4] Creating API Monitor for failing checkout endpoint...")
     monitor_payload = {
         "name": "Live E2E Checkout API Health Check",
-        "url": f"{BACKEND_URL}/api/demo/error",
+        "url": "https://failing-api.example.com/api/v1/checkout",
         "method": "GET",
         "interval_seconds": 30,
         "timeout_ms": 3000,
@@ -73,20 +73,20 @@ def run_e2e_test():
     # 5. Trigger Consecutive Checks to induce failure detection
     print("\n[Step 5] Triggering consecutive external health checks against failing endpoint...")
     check1_resp = client.post(
-        f"{BACKEND_URL}/api/v1/monitors/{monitor_id}/checks",
+        f"{BACKEND_URL}/api/v1/monitors/{monitor_id}/trigger",
         headers=auth_headers
     )
-    assert check1_resp.status_code == 200
+    assert check1_resp.status_code == 200, f"Trigger check 1 failed: {check1_resp.text}"
     chk1 = check1_resp.json()
     print(f"-> Check #1: status={chk1['status']}, HTTP={chk1.get('http_status_code')}, duration={chk1.get('duration_ms')}ms, error={chk1.get('error_category')}")
 
     time.sleep(0.5)
 
     check2_resp = client.post(
-        f"{BACKEND_URL}/api/v1/monitors/{monitor_id}/checks",
+        f"{BACKEND_URL}/api/v1/monitors/{monitor_id}/trigger",
         headers=auth_headers
     )
-    assert check2_resp.status_code == 200
+    assert check2_resp.status_code == 200, f"Trigger check 2 failed: {check2_resp.text}"
     chk2 = check2_resp.json()
     print(f"-> Check #2: status={chk2['status']}, HTTP={chk2.get('http_status_code')}, duration={chk2.get('duration_ms')}ms, error={chk2.get('error_category')}")
 
@@ -115,45 +115,41 @@ def run_e2e_test():
     print(f"   Started At:  {detected_incident['started_at']}")
 
     # 7. Ingest Application Telemetry with PII/Secret to verify Redaction & Correlation
-    print("\n[Step 7] Ingesting application error telemetry with secrets (testing PII redaction)...")
-    # Fetch project API ingestion key
-    keys_resp = client.get(
+    print("\n[Step 7] Generating ingestion API key & ingesting error telemetry...")
+    key_gen_resp = client.post(
         f"{BACKEND_URL}/api/v1/projects/{project_id}/keys",
-        headers=auth_headers
+        headers=auth_headers,
+        json={"name": "E2E Live Telemetry Key"}
     )
-    api_key_header = "inv_live_demo_ingest_key"
-    if keys_resp.status_code == 200 and len(keys_resp.json()) > 0:
-        api_key_header = keys_resp.json()[0]["masked_key"]
+    assert key_gen_resp.status_code == 201, f"Generate key failed: {key_gen_resp.text}"
+    full_ingest_key = key_gen_resp.json()["full_key"]
+    print(f"-> Generated live ingestion key: {key_gen_resp.json()['key_prefix']}***")
 
     now_iso = datetime.now(timezone.utc).isoformat()
     telemetry_payload = {
-        "events": [
-            {
-                "project_id": project_id,
-                "event_type": "error",
-                "timestamp": now_iso,
-                "http_method": "POST",
-                "route_template": "/api/demo/error",
-                "status_code": 500,
-                "duration_ms": 3200.5,
-                "exception_type": "DatabaseError",
-                "sanitized_message": "PostgreSQL connection pool exhausted: timeout 30000ms",
-                "request_headers": {
-                    "Authorization": "Bearer sk_live_super_secret_token_abc123",
-                    "Cookie": "session_id=secret_session_987654321",
-                    "Content-Type": "application/json"
-                },
-                "request_body": "{\"user_id\": \"usr_492\", \"card\": \"4111-1111-1111-1111\"}",
-                "fingerprint": "dna_live_db_pool_timeout"
-            }
-        ]
+        "event_type": "error",
+        "timestamp": now_iso,
+        "http_method": "POST",
+        "route_template": "https://failing-api.example.com/api/v1/checkout",
+        "status_code": 500,
+        "duration_ms": 3200.5,
+        "exception_type": "DatabaseError",
+        "sanitized_message": "PostgreSQL connection pool exhausted: timeout 30000ms",
+        "request_headers": {
+            "Authorization": "Bearer sk_live_super_secret_token_abc123",
+            "Cookie": "session_id=secret_session_987654321",
+            "Content-Type": "application/json"
+        },
+        "request_body": "{\"user_id\": \"usr_492\", \"card\": \"4111-1111-1111-1111\"}",
+        "fingerprint": "dna_live_db_pool_timeout"
     }
     ingest_resp = client.post(
         f"{BACKEND_URL}/api/v1/ingest/events",
-        headers={"X-API-Key": api_key_header, "Content-Type": "application/json"},
+        headers={"X-Ingestion-Key": full_ingest_key, "Content-Type": "application/json"},
         json=telemetry_payload
     )
-    print(f"-> Telemetry Ingestion HTTP status: {ingest_resp.status_code} ({ingest_resp.text})")
+    assert ingest_resp.status_code == 202, f"Ingest failed: {ingest_resp.text}"
+    print(f"-> Telemetry Ingestion HTTP status: {ingest_resp.status_code} ({ingest_resp.json()})")
 
     # 8. Trigger AI Investigation Engine
     print(f"\n[Step 8] Triggering AI Investigation on Incident {incident_id}...")
@@ -210,7 +206,10 @@ def run_e2e_test():
     resolve_resp = client.post(
         f"{BACKEND_URL}/api/v1/incidents/{incident_id}/resolve",
         headers=auth_headers,
-        params={"resolution_note": "Root cause confirmed as simulated database pool exhaustion; mitigated."}
+        json={
+            "resolution_summary": "Root cause confirmed as simulated database pool exhaustion; mitigated.",
+            "root_cause_confirmed": "Database connection pool saturated during peak load"
+        }
     )
     assert resolve_resp.status_code == 200, f"Resolve failed: {resolve_resp.text}"
     resolved = resolve_resp.json()

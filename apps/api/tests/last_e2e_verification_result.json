@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-11-20T11:44:06.135986+00:00",
+  "monitor_id": "fb927bdf-b3ab-4fd7-8a3d-9cb2ef786400",
+  "incident_id": "2c8ab803-10ca-4673-801f-4754eab7ad44",
+  "incident_title": "Availability failure on Live E2E Checkout API Health Check",
+  "severity": "high",
+  "ai_provider": "groq",
+  "ai_model": "openai/gpt-oss-120b",
+  "investigation_summary": "Database outage or connection pool exhaustion causing DatabaseError on checkout API",
+  "investigation_duration_sec": 2.57,
+  "report": {
+    "incident_summary": "The health check failures are caused by a DatabaseError (500) on the checkout endpoint, indicating a backend database outage or connection issue at the time of the incident.",
+    "impact": {
+      "affected_endpoints": [
+        "/v1/payments/charge",
+        "https://failing-api.example.com/api/v1/checkout"
+      ],
+      "observed_error_rate": 1.0,
+      "latency_change": "Observed avg latency: 305.44ms",
+      "time_window": {
+        "start": "2026-11-20T11:13:44.403035",
+        "end": "2026-11-20T11:49:02.985739+00:00"
+      }
+    },
+    "root_cause_hypotheses": [
+      {
+        "title": "Database outage or connection pool exhaustion causing DatabaseError on checkout API",
+        "confidence": "high",
+        "explanation": "The checkout health check hit a 500 response with exception type DatabaseError and a long latency (3200\u202fms). This suggests the service could not obtain a database connection or the DB became unavailable, leading to request timeouts and failures across all health checks.",
+        "supporting_evidence_ids": [
+          "3a62c5ce-3b32-4591-ad0a-b523acbbe8d9",
+          "8a4e94f1-2827-4f6e-ac80-5f140a00abfa"
+        ],
+        "contradicting_evidence_ids": [],
+        "missing_evidence": [
+          "Database connection pool metrics",
+          "DB server health/status logs",
+          "Network latency between service and DB"
+        ],
+        "verification_steps": [
+          "Check database server status and logs for outages or errors at 2026-11-20 11:44 UTC",
+          "Inspect connection pool usage and exhaustion metrics in the service monitoring",
+          "Review recent network incidents or firewall changes affecting DB connectivity",
+          "Confirm no recent code changes impacted DB queries or connection handling"
+        ]
+      }
+    ],
+    "timeline_event_ids": [
+      "cc9bf227-9b4b-4643-a378-ecd0b952e928",
+      "dbc8a7e1-fe20-44d7-8980-ab2df16abe99"
+    ],
+    "similar_incident_ids": [],
+    "recommended_next_steps": [
+      "Verify DB health and logs for the incident window",
+      "Inspect service connection pool and retry metrics",
+      "Check network paths between the API service and the database",
+      "Confirm no silent deployments or config changes were applied"
+    ],
+    "limitations": [
+      "No direct database telemetry or logs were provided",
+      "Absence of connection pool metrics limits ability to confirm exhaustion",
+      "No deployment or config change data to rule out recent code impact"
+    ],
+    "status": "investigated"
+  },
+  "frontend_status_codes": {
+    "home": 200,
+    "monitors": 200,
+    "incidents": 200,
+    "incident_detail": 200
+  }
+}
